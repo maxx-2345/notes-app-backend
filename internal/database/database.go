@@ -10,7 +10,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func Connect(cfg *config.DatabaseConfig, logger *slog.Logger) (*gorm.DB, error) {
+type Database struct {
+	*gorm.DB
+}
+
+type Repository[T any] struct {
+	db *Database
+}
+
+func NewRepository[T any](db *Database) *Repository[T] {
+	return &Repository[T]{db: db}
+}
+
+func Connect(cfg *config.DatabaseConfig, logger *slog.Logger) (*Database, error) {
 	logger.Info("Connecting to database", "host", cfg.Host, "port", cfg.Port, "dbname", cfg.Name)
 
 	db, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{})
@@ -33,6 +45,7 @@ func Connect(cfg *config.DatabaseConfig, logger *slog.Logger) (*gorm.DB, error) 
 
 	logger.Info("Database connection established and pool tuned")
 
-	return db, nil
+	return &Database{DB: db}, nil
 
 }
+
