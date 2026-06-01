@@ -20,3 +20,6 @@ bin/
 
 # Docker
 .docker/
+
+# Environment scripts
+scripts/
