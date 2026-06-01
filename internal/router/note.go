@@ -16,5 +16,8 @@ func SetupNoteRoutes(ctx context.Context, r *chi.Mux, repos *service.Repositorie
 
 		// get by id
 		r.Get("/{id}", handlers.GetNoteByID(ctx,repos))
+
+		// create note
+		r.Post("/", handlers.CreateNote(ctx,repos))
 	})	
 }

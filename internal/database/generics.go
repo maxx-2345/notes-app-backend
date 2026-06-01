@@ -129,3 +129,12 @@ func (r *Repository[T]) SelectByID(ctx context.Context, id uint, preloads []stri
 	}
 	return &model, nil
 }
+
+// Create inserts a new record into the database.
+func (r *Repository[T]) Create(ctx context.Context, model *T) error {
+	err := r.db.DB.WithContext(ctx).Create(model).Error
+	if err != nil {
+		log.Printf("Database create error: %v", err)
+	}
+	return err
+}
