@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/maxx-2345/notes-app-backend/internal/config"
@@ -22,8 +21,8 @@ func NewRepository[T any](db *Database) *Repository[T] {
 	return &Repository[T]{db: db}
 }
 
-func Connect(cfg *config.DatabaseConfig, logger *slog.Logger) (*Database, error) {
-	logger.Info("Connecting to database", "host", cfg.Host, "port", cfg.Port, "dbname", cfg.Name)
+func Connect(cfg *config.DatabaseConfig) (*Database, error) {
+	fmt.Printf("Connecting to database: host=%s, port=%s, dbname=%s\n", cfg.Host, cfg.Port, cfg.Name)
 
 	db, err := gorm.Open(postgres.Open(cfg.DSN), &gorm.Config{})
 	if err != nil {
@@ -43,9 +42,10 @@ func Connect(cfg *config.DatabaseConfig, logger *slog.Logger) (*Database, error)
 	sqlDB.SetConnMaxLifetime(maxLifetime)
 	sqlDB.SetConnMaxIdleTime(maxIdleTime)
 
-	logger.Info("Database connection established and pool tuned")
+	fmt.Println("Database connection established and pool tuned")
 
 	return &Database{DB: db}, nil
 
 }
+
 
