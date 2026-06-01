@@ -10,6 +10,11 @@ import (
 
 func SetupNoteRoutes(ctx context.Context, r *chi.Mux, repos *service.Repositories) {
 	r.Route("/notes", func(r chi.Router) {
+
+		// get all
 		r.Get("/", handlers.GetAllNotes(ctx,repos))
+
+		// get by id
+		r.Get("/{id}", handlers.GetNoteByID(ctx,repos))
 	})	
 }

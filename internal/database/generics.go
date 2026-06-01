@@ -22,7 +22,7 @@ const (
 )
 
 // SelectAll retrieves records of the model type with pagination, sorting, and search.
-// It automatically extracts page, limit, search, sort, and sortColumn parameters from context (set by QueryParamsMiddleware).
+// It automatically extracts page, limit, search, sort, and sortColumn parameters from context.
 // Default limit is 10, maximum allowed is 30.
 // Optional conditions can be passed to filter the query.
 func (r *Repository[T]) SelectAll(
@@ -112,4 +112,20 @@ func (r *Repository[T]) SelectAll(
 		log.Printf("Database select all error: %v", err)
 	}
 	return models, err
+}
+
+func (r *Repository[T]) SelectByID(ctx context.Context, id uint, preloads []string) (*T, error) {
+	var model T
+	query := r.db.DB.WithContext(ctx)
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err := query.First(&model, id).Error
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Printf("Database select by ID error: %v, id: %d", err, id)
+		}
+		return nil, err
+	}
+	return &model, nil
 }
