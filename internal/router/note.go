@@ -12,12 +12,15 @@ func SetupNoteRoutes(ctx context.Context, r *chi.Mux, repos *service.Repositorie
 	r.Route("/notes", func(r chi.Router) {
 
 		// get all
-		r.Get("/", handlers.GetAllNotes(ctx,repos))
+		r.Get("/", handlers.GetAllNotes(ctx, repos))
 
 		// get by id
-		r.Get("/{id}", handlers.GetNoteByID(ctx,repos))
+		r.Get("/{id}", handlers.GetNoteByID(ctx, repos))
 
 		// create note
-		r.Post("/", handlers.CreateNote(ctx,repos))
-	})	
+		r.Post("/", handlers.CreateNote(ctx, repos))
+
+		// delete note
+		r.Delete("/{id}", handlers.DeleteNote(ctx, repos))
+	})
 }

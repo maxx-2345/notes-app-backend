@@ -138,3 +138,20 @@ func (r *Repository[T]) Create(ctx context.Context, model *T) error {
 	}
 	return err
 }
+
+// Delete deletes a record from the database.
+func (r *Repository[T]) Delete(ctx context.Context, id uint) error {
+	var model T
+	err := r.db.DB.WithContext(ctx).First(&model, id).Error
+	if err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Printf("Database delete (pre-fetch) error: %v, id: %d", err, id)
+		}
+		return err
+	}
+	err = r.db.DB.WithContext(ctx).Delete(&model).Error
+	if err != nil {
+		log.Printf("Database delete error: %v, id: %d", err, id)
+	}
+	return err
+}

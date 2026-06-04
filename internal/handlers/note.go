@@ -96,3 +96,22 @@ func CreateNote(ctx context.Context, repos *service.Repositories) http.HandlerFu
 		}
 	}
 }
+
+func DeleteNote(ctx context.Context, repos *service.Repositories) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, "invalid note ID", http.StatusBadRequest)
+			return
+		}
+
+		if err := repos.Note.Delete(ctx, uint(id)); err != nil {
+			http.Error(w, "Something went wrong!", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+	}
+}
