@@ -160,3 +160,60 @@ func UpdateNote(ctx context.Context, repos *service.Repositories) http.HandlerFu
 		}
 	}
 }
+
+func PatchNote(ctx context.Context, repos *service.Repositories) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var request request.PatchNoteRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		validate := validator.New()
+		err = validate.Struct(request)
+		if err != nil {
+			http.Error(w,err.Error(),http.StatusBadRequest)
+			return 
+		}
+
+		note, err := repos.Note.SelectByID(ctx, uint(id), []string{})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		patch := repository.Note{}
+		hasUpdates := false
+		if request.Title != "" {
+			patch.Title = request.Title
+			note.Title = request.Title
+			hasUpdates = true
+		}
+		if request.Content != "" {
+			patch.Content = request.Content
+			note.Content = request.Content
+			hasUpdates = true
+		}
+
+		if hasUpdates {
+			if err := repos.Note.PatchUpdate(ctx, uint(id), &patch); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(note); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}

@@ -25,5 +25,8 @@ func SetupNoteRoutes(ctx context.Context, r *chi.Mux, repos *service.Repositorie
 
 		// update note
 		r.Put("/{id}", handlers.UpdateNote(ctx, repos))
+
+		// patch note
+		r.Patch("/{id}", handlers.PatchNote(ctx, repos))
 	})
 }

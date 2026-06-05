@@ -164,3 +164,12 @@ func (r *Repository[T]) Update(ctx context.Context, model *T) error {
 	}
 	return err
 }
+
+// This is useful for PATCH operations where only provided fields should be updated.
+func (r *Repository[T]) PatchUpdate(ctx context.Context, id uint, model *T) error {
+	err := r.db.DB.WithContext(ctx).Model(model).Where("id = ?", id).Updates(model).Error
+	if err != nil {
+		log.Printf("Database patch update error: %v, id: %d", err, id)
+	}
+	return err
+}
