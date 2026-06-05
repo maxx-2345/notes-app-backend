@@ -115,3 +115,48 @@ func DeleteNote(ctx context.Context, repos *service.Repositories) http.HandlerFu
 		w.WriteHeader(http.StatusOK)
 	}
 }
+
+func UpdateNote(ctx context.Context, repos *service.Repositories) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := chi.URLParam(r, "id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid Note ID", http.StatusBadRequest)
+			return
+		}
+
+		var request request.UpdateNoteRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		validate := validator.New()
+		err = validate.Struct(request)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		note, err := repos.Note.SelectByID(ctx, uint(id), []string{})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		note.Title = request.Title
+		note.Content = request.Content
+
+		if err := repos.Note.Update(ctx, note); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(note); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}

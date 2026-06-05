@@ -155,3 +155,12 @@ func (r *Repository[T]) Delete(ctx context.Context, id uint) error {
 	}
 	return err
 }
+
+// Update updates a record in the database.
+func (r *Repository[T]) Update(ctx context.Context, model *T) error {
+	err := r.db.DB.WithContext(ctx).Save(model).Error
+	if err != nil {
+		log.Printf("Database update error: %v", err)
+	}
+	return err
+}
